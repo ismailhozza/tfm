@@ -89,7 +89,7 @@ function WeightLiftingIcon() {
 
 function App() {
 
-  const weekNumber = 3 //getWeekNumber(new Date())[1];
+  const weekNumber = getWeekNumber(new Date())[1];
   console.log('weekNumber:', weekNumber)
 
   // Check for week number overflow
