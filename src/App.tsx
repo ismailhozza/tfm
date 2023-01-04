@@ -1,5 +1,8 @@
 import clsx from "clsx";
 
+import { GiWeightLiftingUp } from "react-icons/gi";
+import { FaRunning } from "react-icons/fa";
+
 import data from "./data.json";
 
 function getWeekNumber(d: Date) {
@@ -68,25 +71,6 @@ function getDayName(dayNumber: string) {
 }
 
 
-function WeightLiftingIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-6 w-6"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M15 10l-4-4m0 0l-4 4m4-4v18m6-18l-4-4m0 0l-4 4m4-4v18M3 21h18M3 10h18"
-      />
-    </svg>
-  );
-}
-
 function App() {
 
   const weekNumber = getWeekNumber(new Date())[1];
@@ -113,32 +97,66 @@ function App() {
   const SevenDaysPlan = keys.map((dayNumber) => {
     const dayPlan = weekPlan[dayNumber];
     const isRest = dayPlan.includes("lepo");
+    const isRun = dayPlan.includes("km");
+    const isComp = dayPlan.includes("K");
     const isSun = dayNumber === "0";
     const isMon = dayNumber === "1";
 
+    const isCurrentDay = dayNumber === new Date().getDay().toString();
+    const currentDayHighlight = isCurrentDay ? "bg-warning" : "";
+
+    const dayStyle = clsx(
+      "flex justify-between items-center mx-2 my-4 border p-4 rounded-lg w-48 h-30",
+      {
+        "bg-success": isRest,
+        "bg-primary": isSun,
+        "bg-secondary": isMon,
+        [currentDayHighlight]: isCurrentDay,
+        "border-success": isCurrentDay,
+        "border-4": isCurrentDay,
+      }
+    );
+
     return (
-      <div className={clsx('flex flex-col items-center mx-2 my-4 border p-4',
-        isRest && 'bg-success',
-        isSun && 'bg-primary',
-        isMon && 'bg-secondary')}>
+      <div className={dayStyle}>
         <div className="text-2xl font-bold">{getDayName(dayNumber)}</div>
-        <div className="text-xl font-bold">
-          {isRest && "LEPO"}
-          {isMon && <WeightLiftingIcon />}
-          {!isRest && !isMon && dayPlan}
+        <div className="flex flex-col text-xl">
+          <div className="text-center inline-block">
+            {isRest && "LEPO"}
+            {isMon && <GiWeightLiftingUp size={32} />}
+            {isRun && <FaRunning className="inline" size={32} />}
+            {isComp && <FaRunning className="inline" size={32} />}
+          </div>
+          <div>{!isRest && !isMon && dayPlan}</div>
         </div>
       </div>
     );
   });
 
-
   return (
     <div className="flex flex-col items-center">
-      <div className="text-4xl font-bold">
+      <div className="text-4xl font-bold my-5 uppercase">
         Week {weekNumber}
       </div>
-      <div className="flex justify-center items-center flex-wrap">
-        {SevenDaysPlan}
+      <div className="flex items-center flex-col md:flex-row">
+        <div>
+          <div className="flex flex-col justify-center items-center flex-wrap">
+            {SevenDaysPlan}
+          </div>
+
+        </div>
+        <div className="bg-secondary ml-2 p-4">
+          <p className="text-center mb-2 text-md font-bold">LEGEND</p>
+          <p>
+            Pa = Palauttava harjoitus<br />
+            Pe = Peruskuntoharjoitus<br />
+            M = Mäkinen harjoitus<br />
+            T = Tempoharjoitus<br />
+            K = Kilpailuvauhtinen harjoitus<br />
+            IV = Intervalliharjoitus<br />
+            Ve = Vaihtoehtoinen harjoittelu (4h:n ohjelmassa)<br />
+          </p>
+        </div>
       </div>
     </div>
   );
