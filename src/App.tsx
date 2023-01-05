@@ -96,13 +96,14 @@ const BackAndForwardControls = ({ weekNumber, setWeekNumber }: { weekNumber: num
 
 function App() {
   const [weekNumber, setWeekNumber] = useState(getWeekNumber(new Date())[1]);
+  const isCurrentWeek = weekNumber === getWeekNumber(new Date())[1];
 
   // Check for week number overflow
   if (Object.keys(data).includes(weekNumber.toString()) === false) {
     return (
       <div className="flex flex-col items-center">
         <div className="text-4xl font-bold">
-          Week {weekNumber}
+          Week {weekNumber} {isCurrentWeek && <span className="text-sm">(Current week)</span>}
         </div>
         <div className="text-2xl font-bold">
           No data for this week
@@ -158,7 +159,7 @@ function App() {
   return (
     <div className="flex flex-col items-center">
       <div className="text-4xl font-bold my-5 uppercase">
-        Week {weekNumber}
+        Week {weekNumber} {isCurrentWeek && <span className="text-sm">(Current week)</span>}
       </div>
       <div className="flex items-center flex-col md:flex-row">
         <div>
