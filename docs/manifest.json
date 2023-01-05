@@ -4,8 +4,8 @@
   "theme_color": "#e2231a",
   "background_color": "#ffffff",
   "display": "standalone",
-  "scope": "./",
-  "start_url": "./",
+  "scope": "./tfm",
+  "start_url": "./tfm",
   "icons": [
     {
       "src": "windows11/SmallTile.scale-100.png",
