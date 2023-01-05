@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import clsx from "clsx";
 
 import { GiWeightLiftingUp } from "react-icons/gi";
@@ -70,11 +71,31 @@ function getDayName(dayNumber: string) {
   }
 }
 
+const BackAndForwardControls = ({ weekNumber, setWeekNumber }: { weekNumber: number; setWeekNumber: (weekNumber: number) => void }) => {
+  return (
+    <div className="flex flex-row justify-between">
+      <button
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        onClick={() => {
+          setWeekNumber(weekNumber - 1);
+        }}
+      >
+        Back
+      </button>
+      <button
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        onClick={() => {
+          setWeekNumber((weekNumber + 1) % 52 + 1);
+        }}
+      >
+        Forward
+      </button>
+    </div>
+  );
+};
 
 function App() {
-
-  const weekNumber = getWeekNumber(new Date())[1];
-  console.log('weekNumber:', weekNumber)
+  const [weekNumber, setWeekNumber] = useState(getWeekNumber(new Date())[1]);
 
   // Check for week number overflow
   if (Object.keys(data).includes(weekNumber.toString()) === false) {
@@ -86,6 +107,7 @@ function App() {
         <div className="text-2xl font-bold">
           No data for this week
         </div>
+        <BackAndForwardControls weekNumber={weekNumber} setWeekNumber={setWeekNumber} />
       </div>
     );
   }
@@ -143,8 +165,8 @@ function App() {
           <div className="flex flex-col justify-center items-center flex-wrap">
             {SevenDaysPlan}
           </div>
-
         </div>
+        <BackAndForwardControls weekNumber={weekNumber} setWeekNumber={setWeekNumber} />
         <div className="bg-secondary ml-2 p-4">
           <p className="text-center mb-2 text-md font-bold">LEGEND</p>
           <p>
