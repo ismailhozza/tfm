@@ -74,25 +74,44 @@ function getDayName(dayNumber: string) {
 const BackAndForwardControls = ({ weekNumber, setWeekNumber }: { weekNumber: number; setWeekNumber: (weekNumber: number) => void }) => {
   return (
     <div className="flex flex-row justify-between">
-      <button
+      { (weekNumber > 1) && <button
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         onClick={() => {
           setWeekNumber(weekNumber - 1);
         }}
       >
         Back
-      </button>
-      <button
+      </button>}
+      {(weekNumber < 51) && <button
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         onClick={() => {
-          setWeekNumber((weekNumber + 1) % 52 + 1);
+          setWeekNumber(weekNumber + 1);
         }}
       >
         Forward
-      </button>
+      </button>}
     </div>
   );
 };
+
+function getDate(weekNumber: number, dayNumber: number) {
+  // valid week numbers are 1-52
+  if (weekNumber < 1 || weekNumber > 52) {
+    return null;
+  }
+  if (dayNumber < 0 || dayNumber > 6) {
+    return null;
+  }
+
+  const year = new Date().getFullYear();
+  const date = new Date(year, 0, 1 + (weekNumber - 1) * 7);
+  const day = date.getDay();
+  const diff = date.getDate() - day + dayNumber;
+
+  // return dd.mm.yyyy format
+  return new Date(date.setDate(diff)).toLocaleDateString("fi-FI");
+}
+
 
 function App() {
   const [weekNumber, setWeekNumber] = useState(getWeekNumber(new Date())[1]);
@@ -126,7 +145,7 @@ function App() {
     const isMon = dayNumber === "1";
 
     const isCurrentDay = dayNumber === new Date().getDay().toString();
-    const currentDayHighlight = isCurrentDay ? "bg-warning" : "";
+    const currentDayHighlight = isCurrentDay ? "border-success" : "";
 
     const dayStyle = clsx(
       "flex justify-between items-center mx-2 my-4 border p-4 rounded-lg w-48 h-30",
@@ -142,7 +161,10 @@ function App() {
 
     return (
       <div className={dayStyle}>
-        <div className="text-2xl font-bold">{getDayName(dayNumber)}</div>
+        <div className="text-2xl font-bold text-center">
+          {getDayName(dayNumber)} <br />
+          <span className="text-sm">{getDate(Number(weekNumber), Number(dayNumber))}</span>
+        </div>
         <div className="flex flex-col text-xl">
           <div className="text-center inline-block">
             {isRest && "LEPO"}
@@ -162,13 +184,13 @@ function App() {
         Week {weekNumber} {isCurrentWeek && <span className="text-sm">(Current week)</span>}
       </div>
       <div className="flex items-center flex-col md:flex-row">
-        <div>
+        <div className="flex flex-col">
           <div className="flex flex-col justify-center items-center flex-wrap">
             {SevenDaysPlan}
           </div>
+          <BackAndForwardControls weekNumber={weekNumber} setWeekNumber={setWeekNumber} />
         </div>
-        <BackAndForwardControls weekNumber={weekNumber} setWeekNumber={setWeekNumber} />
-        <div className="bg-secondary ml-2 p-4">
+        <div className="bg-secondary ml-2 p-4 rounded-lg">
           <p className="text-center mb-2 text-md font-bold">LEGEND</p>
           <p>
             Pa = Palauttava harjoitus<br />
