@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import clsx from "clsx";
 
 import { GiWeightLiftingUp } from "react-icons/gi";
@@ -16,8 +16,8 @@ function getWeekNumber(d: Date) {
   var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
   // Calculate full weeks to nearest Thursday
   var weekNo = Math.ceil(((+d - +yearStart) / 86400000 + 1) / 7);
-  // Return array of year and week number
-  return [d.getUTCFullYear(), weekNo];
+  // Week number
+  return weekNo;
 }
 
 function parseWeekPlan(weekPlan: string): { [key: string]: string } {
@@ -109,13 +109,45 @@ function getDate(weekNumber: number, dayNumber: number) {
   const diff = date.getDate() - day + dayNumber;
 
   // return dd.mm.yyyy format
-  return new Date(date.setDate(diff)).toLocaleDateString("fi-FI");
+  return new Date(date.setDate(diff));
 }
 
+const OpenWeatherEndpoint = 'http://api.openweathermap.org/data/2.5/forecast?id=634963&appid=ca08ce2213be5044553f88e7e1a9203d&units=metric';
+
+interface IForecast {
+  dt_txt: string;
+  main: {
+    temp: number;
+    feels_like: number;
+  };
+}
+
+function getAllForecastByDay(forecast: IForecast[], day: Date | null) {
+  if (day === null) {
+    return [];
+  }
+  return forecast.filter((item) => {
+    const date = new Date(item.dt_txt.split(" ")[0]);
+    return date.getDate() === day.getDate() && date.getMonth() === day.getMonth() && date.getFullYear() === day.getFullYear();
+  });
+}
 
 function App() {
-  const [weekNumber, setWeekNumber] = useState(getWeekNumber(new Date())[1]);
-  const isCurrentWeek = weekNumber === getWeekNumber(new Date())[1];
+  const [weekNumber, setWeekNumber] = useState(getWeekNumber(new Date()));
+  const isCurrentWeek = weekNumber === getWeekNumber(new Date());
+  const [forecast, setForecast] = useState<IForecast[]>([]);
+
+  const fetchForecast = async () => {
+    const response = await fetch(OpenWeatherEndpoint);
+    const data = await response.json();
+    const list = data?.list;
+    // Select list items.
+    setForecast(list || []);
+  };
+
+  useEffect(() => {
+    fetchForecast();
+  }, []);
 
   // Check for week number overflow
   if (Object.keys(data).includes(weekNumber.toString()) === false) {
@@ -146,9 +178,11 @@ function App() {
 
     const isCurrentDay = dayNumber === new Date().getDay().toString();
     const currentDayHighlight = isCurrentDay ? "border-success" : "";
+    const dateObj = getDate(Number(weekNumber), Number(dayNumber));
+    const dayForecasts = getAllForecastByDay(forecast, dateObj);
 
     const dayStyle = clsx(
-      "flex justify-between items-center mx-2 my-4 border p-4 rounded-lg w-48 h-30",
+      "flex justify-between items-center mx-2 my-4 border p-4 rounded-lg w-96 h-30",
       {
         "bg-success": isRest,
         "bg-primary": isSun,
@@ -163,7 +197,7 @@ function App() {
       <div className={dayStyle}>
         <div className="text-2xl font-bold text-center">
           {getDayName(dayNumber)} <br />
-          <span className="text-sm">{getDate(Number(weekNumber), Number(dayNumber))}</span>
+          {dateObj && <span className="text-sm">{dateObj.toLocaleDateString("fi-FI")}</span>}
         </div>
         <div className="flex flex-col text-xl">
           <div className="text-center inline-block">
@@ -173,6 +207,16 @@ function App() {
             {isComp && <FaRunning className="inline" size={32} />}
           </div>
           <div>{!isRest && !isMon && dayPlan}</div>
+        </div>
+        <div>
+          {dayForecasts.map((item) => {
+            const date = new Date(item.dt_txt);
+            return (
+              <div key={item.dt_txt} className="text-center">
+                {date.getHours()}:00 {item.main.temp}°C / {item.main.feels_like}°C
+              </div>
+            )
+          })}
         </div>
       </div>
     );
