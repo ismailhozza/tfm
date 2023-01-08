@@ -103,6 +103,11 @@ function getDate(weekNumber: number, dayNumber: number) {
     return null;
   }
 
+  // Handle sunday as 7
+  if (dayNumber === 0) {
+    dayNumber = 7;
+  }
+
   const year = new Date().getFullYear();
   const date = new Date(year, 0, 1 + (weekNumber - 1) * 7);
   const day = date.getDay();
@@ -112,7 +117,7 @@ function getDate(weekNumber: number, dayNumber: number) {
   return new Date(date.setDate(diff));
 }
 
-const OpenWeatherEndpoint = 'http://api.openweathermap.org/data/2.5/forecast?id=634963&appid=ca08ce2213be5044553f88e7e1a9203d&units=metric';
+const OpenWeatherEndpoint = 'https://api.openweathermap.org/data/2.5/forecast?id=634963&appid=ca08ce2213be5044553f88e7e1a9203d&units=metric';
 
 interface IForecast {
   dt_txt: string;
@@ -182,7 +187,7 @@ function App() {
     const dayForecasts = getAllForecastByDay(forecast, dateObj);
 
     const dayStyle = clsx(
-      "flex justify-between items-center mx-2 my-4 border p-4 rounded-lg w-96 h-30",
+      "flex justify-between items-center mx-2 my-4 border p-4 rounded-lg w-80 md:w-96 h-30",
       {
         "bg-success": isRest,
         "bg-primary": isSun,
@@ -194,12 +199,13 @@ function App() {
     );
 
     return (
-      <div className={dayStyle}>
+      <div className={dayStyle} key={dayNumber}>
+        <div className="flex flex-col justify-between items-center">
         <div className="text-2xl font-bold text-center">
           {getDayName(dayNumber)} <br />
           {dateObj && <span className="text-sm">{dateObj.toLocaleDateString("fi-FI")}</span>}
         </div>
-        <div className="flex flex-col text-xl">
+        <div className="flex flex-col text-xl mt-4">
           <div className="text-center inline-block">
             {isRest && "LEPO"}
             {isMon && <GiWeightLiftingUp size={32} />}
@@ -208,19 +214,21 @@ function App() {
           </div>
           <div>{!isRest && !isMon && dayPlan}</div>
         </div>
+        </div>
         <div>
-          {dayForecasts.map((item) => {
+          {dayForecasts.map((item, index) => {
             const date = new Date(item.dt_txt);
             return (
-              <div key={item.dt_txt} className="text-center">
-                {date.getHours()}:00 {item.main.temp}°C / {item.main.feels_like}°C
+              <div key={index} className="text-left">
+                {date.getHours()}:00: {item.main.temp}°C / {item.main.feels_like}°C
               </div>
             )
           })}
+          {dayForecasts.length === 0 && <div className="text-center">No data</div>}
         </div>
       </div>
     );
-  });
+  });  // end of SevenDaysPlan
 
   return (
     <div className="flex flex-col items-center">
